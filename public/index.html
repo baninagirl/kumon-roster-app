@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kumon Iligan City — Student Roster</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1>Student &amp; Enrollment Roster</h1>
+        <p class="subtitle">Kumon Iligan City Learning Center</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="undoBtn" class="btn hidden" type="button" title="Ctrl+Z"></button>
+        <button id="addStudentBtn" class="btn btn-primary">+ Add student</button>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="roster">Roster</button>
+      <button class="tab-btn" data-tab="calendar">Weekly Calendar</button>
+      <button class="tab-btn" data-tab="ashr">ASHR</button>
+      <button class="tab-btn" data-tab="payments">Payments</button>
+      <button class="tab-btn" data-tab="absent">Absent</button>
+      <button class="tab-btn" data-tab="billing-groups">Billing Groups</button>
+      <button class="tab-btn" data-tab="verification">Payment Verification</button>
+    </nav>
+
+    <section id="view-roster" class="view">
+      <section class="month-status-bar">
+        <span id="activeMonthLabel" class="active-month-label"></span>
+        <button id="manageMonthLink" type="button" class="link-btn">Manage →</button>
+      </section>
+
+      <section class="toolbar">
+        <input id="searchInput" type="search" placeholder="Search by student name…" class="input search-input" />
+        <select id="subjectFilter" class="input">
+          <option value="">All subjects</option>
+          <option value="Math">Math</option>
+          <option value="Reading">Reading</option>
+        </select>
+        <select id="teacherFilter" class="input">
+          <option value="">All teachers</option>
+        </select>
+        <select id="groupFilter" class="input">
+          <option value="">All groups</option>
+        </select>
+        <select id="monthFilter" class="input">
+          <option value="">Current (live)</option>
+        </select>
+        <button id="moreFiltersToggle" type="button" class="btn btn-small">More filters</button>
+        <span id="resultCount" class="result-count"></span>
+      </section>
+
+      <section id="moreFiltersRow" class="toolbar toolbar-secondary hidden">
+        <select id="dayFilter" class="input">
+          <option value="">All days</option>
+        </select>
+        <select id="timeFilter" class="input">
+          <option value="">All time slots</option>
+        </select>
+        <select id="statusFilter" class="input">
+          <option value="">All statuses</option>
+          <option value="Active">Active</option>
+          <option value="Absent">Absent</option>
+        </select>
+      </section>
+
+      <p id="historyNotice" class="history-notice hidden">
+        Viewing a past month — read-only snapshot from that month's report, not the live roster. Switch back to "Current (live)" above to edit.
+      </p>
+
+      <section class="table-wrap">
+        <table class="roster-table">
+          <thead id="tableHead">
+            <tr>
+              <th>Student</th>
+              <th>Grade</th>
+              <th>Subject</th>
+              <th>Goal</th>
+              <th>Actual</th>
+              <th>Teacher</th>
+              <th>Schedule</th>
+              <th>Mode</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="11" class="loading">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <section id="view-calendar" class="view hidden">
+      <section class="toolbar">
+        <select id="calTeacherFilter" class="input">
+          <option value="">All teachers (center-wide)</option>
+        </select>
+        <select id="calGroupFilter" class="input">
+          <option value="">All groups</option>
+        </select>
+        <select id="calModeFilter" class="input">
+          <option value="">All modes (RI + IC)</option>
+          <option value="IC">In-Center only</option>
+          <option value="RI">Remote Instruction only</option>
+        </select>
+        <span id="calCount" class="result-count"></span>
+      </section>
+      <section class="calendar-wrap">
+        <div id="calendarGrid" class="calendar-grid"></div>
+      </section>
+
+      <section class="attendance-summary">
+        <div class="attendance-summary-header">
+          <h3>Not arrived today</h3>
+          <span id="notArrivedCount" class="result-count"></span>
+        </div>
+        <p class="attendance-summary-hint">
+          Click the circle on a chip in today's column to cross a student off
+          as arrived. Anyone left unmarked by end of day shows up here so you
+          can follow up.
+        </p>
+        <div id="notArrivedList" class="not-arrived-list"></div>
+      </section>
+    </section>
+
+    <section id="view-ashr" class="view hidden">
+      <section id="ashrCycleRow" class="cycle-row"></section>
+      <p id="ashrLiveNote" class="ashr-live-note hidden">
+        This cycle hasn't happened yet — tiers below are a live preview computed from each student's
+        current recorded level, not locked in.
+      </p>
+
+      <section class="toolbar">
+        <input id="ashrSearchInput" type="search" placeholder="Search by student name…" class="input search-input" />
+        <select id="ashrSubjectFilter" class="input">
+          <option value="">All subjects</option>
+          <option value="Math">Math</option>
+          <option value="Reading">Reading</option>
+        </select>
+        <select id="ashrGradeFilter" class="input">
+          <option value="">All grades</option>
+        </select>
+        <select id="ashrTeacherFilter" class="input">
+          <option value="">All teachers</option>
+        </select>
+        <select id="ashrResultFilter" class="input">
+          <option value="">All awards</option>
+          <option value="KIS">KIS</option>
+          <option value="Bronze">Bronze</option>
+          <option value="Silver">Silver</option>
+          <option value="Gold">Gold</option>
+          <option value="ASF">ASF</option>
+          <option value="Completer">Completer</option>
+          <option value="Double Award">Double Award</option>
+        </select>
+        <label class="checkbox-label">
+          <input id="ashrShowDoubleFilter" type="checkbox" checked />
+          Show double awardees
+        </label>
+        <span id="ashrResultCount" class="result-count"></span>
+      </section>
+
+      <section id="ashrSummaryStrip" class="summary-strip"></section>
+
+      <section class="table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Grade</th>
+              <th>Subject</th>
+              <th>Level</th>
+              <th>Result</th>
+              <th>Status</th>
+              <th>Teacher</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ashrTableBody">
+            <tr><td colspan="8" class="loading">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <section id="view-payments" class="view hidden">
+      <section class="month-status-bar">
+        <span id="paymentsMonthLabel" class="active-month-label"></span>
+      </section>
+
+      <section class="toolbar">
+        <input id="paySearchInput" type="search" placeholder="Search by student name…" class="input search-input" />
+        <select id="payMonthFilter" class="input">
+          <option value="">Current (live)</option>
+        </select>
+        <select id="payTeacherFilter" class="input">
+          <option value="">All teachers</option>
+        </select>
+        <select id="payGroupFilter" class="input">
+          <option value="">All groups</option>
+        </select>
+        <select id="payStatusFilter" class="input">
+          <option value="">All statuses</option>
+          <option value="paid">Paid</option>
+          <option value="partial">Partially Paid</option>
+          <option value="advance">Advance / Credit</option>
+          <option value="unpaid">Unpaid</option>
+          <option value="absent">Absent (reported)</option>
+        </select>
+        <label class="checkbox-label">
+          <input id="payNeedsAttentionFilter" type="checkbox" />
+          Needs attention only
+        </label>
+        <span id="payResultCount" class="result-count"></span>
+      </section>
+
+      <section id="paySummaryStrip" class="summary-strip"></section>
+
+      <section class="toolbar toolbar-secondary">
+        <button id="payComebackToggle" type="button" class="btn btn-small">Show come-back list</button>
+      </section>
+
+      <section id="comebackSection" class="hidden">
+        <p class="review-note">
+          Students who haven't paid in 1–4 months, based on their last recorded payment — still
+          within the window where they can come back without paying registration again. Past 4
+          months, or with no payment ever on record, are listed separately below.
+        </p>
+        <div id="comebackList"></div>
+      </section>
+
+      <!-- Bulk SOA / paid marking (Aug 19) -- shown once at least one row is
+           checked. Matches how SOAs actually go out: one message to a whole
+           group chat, not one edit per student. Only ever touches ONE field
+           across the selected students -- date is editable, defaulting to
+           today, so a same-day mark or a same-day backfill both work. -->
+      <section id="payBulkBar" class="toolbar toolbar-bulk hidden">
+        <span id="payBulkCount" class="result-count"></span>
+        <select id="payBulkAction" class="input">
+          <option value="soa1">Mark SOA1 sent</option>
+          <option value="soa2">Mark SOA2 sent</option>
+          <option value="soa3">Mark SOA3 sent</option>
+          <option value="soa4">Mark SOA4 sent</option>
+          <option value="paid">Mark paid</option>
+        </select>
+        <input id="payBulkDate" type="date" class="input" />
+        <button id="payBulkApplyBtn" type="button" class="btn btn-primary btn-small">Apply to selected</button>
+        <button id="payBulkClearBtn" type="button" class="btn btn-small">Clear selection</button>
+      </section>
+
+      <section class="table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th><input id="paySelectAllCheckbox" type="checkbox" title="Select all filtered students" /></th>
+              <th>Student</th>
+              <th>Grade</th>
+              <th>Teacher</th>
+              <th>SOA 1</th>
+              <th>SOA 2</th>
+              <th>SOA 3</th>
+              <th>SOA 4</th>
+              <th>Tuition</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Receipt</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTableBody">
+            <tr><td colspan="14" class="loading">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- Absent tab (Aug 21) -- students the center no longer counts as
+         active. Deliberately separate from the Payments tab's payment-lapse
+         come-back list: this is "formally reported absent" (roster_status),
+         not "hasn't paid recently." See build log / roadmap for the
+         distinction. -->
+    <section id="view-absent" class="view hidden">
+      <section class="month-status-bar">
+        <span id="absentMonthLabel" class="active-month-label"></span>
+      </section>
+
+      <section class="toolbar">
+        <input id="absentSearchInput" type="search" placeholder="Search by student name…" class="input search-input" />
+        <select id="absentMonthFilter" class="input">
+          <option value="">Current (live)</option>
+        </select>
+        <select id="absentTeacherFilter" class="input">
+          <option value="">All teachers</option>
+        </select>
+        <select id="absentGradeFilter" class="input">
+          <option value="">All grades</option>
+          <option value="PK1">PK1</option>
+          <option value="PK2">PK2</option>
+          <option value="PK3">PK3</option>
+          <option value="K">K</option>
+          <option value="P1">P1</option>
+          <option value="P2">P2</option>
+          <option value="P3">P3</option>
+          <option value="P4">P4</option>
+          <option value="P5">P5</option>
+          <option value="P6">P6</option>
+          <option value="P7">P7</option>
+          <option value="P8">P8</option>
+          <option value="P9">P9</option>
+          <option value="P10">P10</option>
+          <option value="P11">P11</option>
+          <option value="P12">P12</option>
+          <option value="P13">P13</option>
+          <option value="P14">P14</option>
+        </select>
+        <select id="absentSubjectFilter" class="input">
+          <option value="">All subjects</option>
+          <option value="Math">Math</option>
+          <option value="Reading">Reading</option>
+        </select>
+        <select id="absentBucketFilter" class="input">
+          <option value="">All durations</option>
+          <option value="0">This month</option>
+          <option value="1">1 month</option>
+          <option value="2">2 months</option>
+          <option value="3">3 months</option>
+          <option value="4">4 months (final window)</option>
+          <option value="outside">Outside window (5+ months)</option>
+        </select>
+        <span id="absentResultCount" class="result-count"></span>
+      </section>
+
+      <!-- Aug 25 follow-up (Nina: "i need to show historical data so the
+           past 4 months") -- how long each student has been absent, bucketed
+           against the 4-month re-registration window from the roadmap.
+           Deliberately computed against TODAY, not whichever historical
+           `month` the toolbar above is filtered to -- see the comment on
+           listAbsentStudents in server.js for why those are two different
+           questions. -->
+      <section id="absentBucketSummary" class="summary-strip"></section>
+
+      <p class="review-note">
+        Students the center has formally reported as no longer active, preserved here with their
+        full history rather than deleted. This list is separate from the Payments tab's come-back
+        list (which flags active students who simply haven't paid recently).
+      </p>
+
+      <p class="review-note">
+        <strong>Risk signals</strong> are auto-flagged from attendance and ASHR history, threshold-based
+        (not a human judgment call) -- see a row's Edit panel for the full picture. Worksheets/sets
+        completed per month isn't tracked in the app yet, so it's never part of these flags -- treat
+        "no signals" as a partial picture, not a clean bill of health.
+      </p>
+
+      <section class="table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Grade</th>
+              <th>Subject(s)</th>
+              <th>Last teacher</th>
+              <th>Absent since</th>
+              <th>Months absent</th>
+              <th>Risk signals</th>
+              <th>Reason / note</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="absentTableBody">
+            <tr><td colspan="9" class="loading">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- Billing Groups (Aug 25 follow-up, roadmap Phase 4) -- students who
+         share one combined SOA/billing relationship. Deliberately rendered
+         as cards, not a flat table like every other tab: a group's member
+         list IS the point here, not a row property. Current-state only --
+         no month-by-month history of past membership yet (see README). -->
+    <section id="view-billing-groups" class="view hidden">
+      <section class="toolbar">
+        <button id="newBillingGroupBtn" class="btn btn-primary" type="button">+ New billing group</button>
+        <span id="billingGroupsResultCount" class="result-count"></span>
+      </section>
+
+      <p class="review-note">
+        Students who share one combined Statement of Account and one billing relationship --
+        grouping them here never changes a student's teacher, schedule, level, or tuition rate,
+        only who they're billed together with. A student not listed in any group below is billed
+        individually, same as today. To actually generate and download a statement, use the
+        "⬇ SOA" button next to a member's name on the Payments tab -- it automatically combines
+        the whole group into one document.
+      </p>
+
+      <div id="billingGroupsList" class="billing-groups-list"></div>
+    </section>
+
+    <!-- Payment Verification (Aug 27 follow-up) -- Nina: teachers drag a
+         receipt onto their student's Payments row; Joanne's job shifts from
+         encoding payments to verifying them here against her own bank
+         access. No login/role system exists yet (roadmap Phase 1), so
+         "admin/Joanne only" currently just means "this tab, same as every
+         other tab, is visible to anyone with the app open" -- there's
+         nothing stronger to gate it behind yet. Deliberately shows
+         pending_review + flagged together (both still need a decision),
+         oldest first -- see listPendingReceipts in server.js. -->
+    <section id="view-verification" class="view hidden">
+      <p class="review-note">
+        Every receipt a teacher's uploaded that Joanne hasn't decided on yet, oldest first. Verifying
+        one adds its amount to that student's paid total for the month; flagging or rejecting leaves
+        the student's balance untouched. Compare the reference number and amount against your own
+        bank access before verifying -- the extracted values are a best-effort read of the screenshot,
+        not a guarantee.
+      </p>
+      <span id="verificationResultCount" class="result-count"></span>
+      <div id="verificationQueue"></div>
+    </section>
+  </div>
+
+  <!-- Edit / Add enrollment panel -->
+  <div id="overlay" class="overlay hidden"></div>
+  <aside id="editPanel" class="panel hidden">
+    <div class="panel-header">
+      <h2 id="panelTitle">Edit enrollment</h2>
+      <button id="panelClose" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="editForm" class="panel-body">
+      <input type="hidden" id="f_enrollmentId" />
+      <input type="hidden" id="f_studentId" />
+
+      <fieldset id="studentFields">
+        <legend>Student</legend>
+        <div class="field-row">
+          <label>Last name <input id="f_lastName" required class="input" /></label>
+          <label>First name <input id="f_firstName" required class="input" /></label>
+        </div>
+        <div class="field-row">
+          <label>Grade
+            <select id="f_grade" class="input">
+              <option value="">— not set —</option>
+              <option value="PK1">PK1</option>
+              <option value="PK2">PK2</option>
+              <option value="PK3">PK3</option>
+              <option value="K">K</option>
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
+              <option value="P5">P5</option>
+              <option value="P6">P6</option>
+              <option value="P7">P7</option>
+              <option value="P8">P8</option>
+              <option value="P9">P9</option>
+              <option value="P10">P10</option>
+              <option value="P11">P11</option>
+              <option value="P12">P12</option>
+              <option value="P13">P13</option>
+              <option value="P14">P14</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- Aug 25 follow-up -- Billing Groups (roadmap Phase 4). Student-level,
+           not per-subject, since a billing group covers the whole student's
+           combined tuition -- shown once per student regardless of which
+           subject enrollment this panel happened to be opened for. Only
+           meaningful for an existing student (see panelDangerActions above
+           for the same "Add student" exclusion pattern). -->
+      <fieldset id="billingGroupSection" class="hidden">
+        <legend>Billing group</legend>
+        <label>
+          <select id="f_billingGroup" class="input">
+            <option value="">— not in a group (billed individually) —</option>
+          </select>
+        </label>
+        <p class="field-hint">Create or manage groups themselves from the Billing Groups tab.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Subject enrollment</legend>
+        <div class="field-row">
+          <label>Subject
+            <select id="f_subject" class="input" required>
+              <option value="Math">Math</option>
+              <option value="Reading">Reading</option>
+            </select>
+          </label>
+          <label>Status
+            <select id="f_status" class="input">
+              <option value="Active">Active</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label><span class="field-label-text">Goal level <span class="field-hint" id="goalMonthHint">(EOM)</span></span>
+            <select id="f_goalLevel" class="input"></select>
+          </label>
+          <label>Goal page (1–200) <input id="f_goalPage" type="number" min="1" max="200" class="input" /></label>
+        </div>
+        <div class="field-row">
+          <label class="grow"><span class="field-label-text">Goal award <span class="field-hint" id="goalAwardCycleHint"></span></span>
+            <select id="f_goalAward" class="input">
+              <option value="">— no award goal —</option>
+              <option value="KIS">KIS</option>
+              <option value="Bronze">Bronze</option>
+              <option value="Silver">Silver</option>
+              <option value="Gold">Gold</option>
+              <option value="ASF">ASF</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label>Current level (actual)
+            <select id="f_level" class="input"></select>
+          </label>
+          <label>Page (1–200) <input id="f_page" type="number" min="1" max="200" class="input" /></label>
+        </div>
+        <div class="field-row">
+          <label class="grow">Teacher
+            <select id="f_teacher" class="input">
+              <option value="">— Unassigned (needs review) —</option>
+            </select>
+          </label>
+        </div>
+        <div class="schedule-picker" id="schedulePicker">
+          <label class="schedule-picker-legend">Weekly schedule — IC (In-Center) or RI (Remote Instruction) per day, defaults to IC</label>
+          <div id="scheduleDays" class="schedule-days"></div>
+          <p id="legacyScheduleNote" class="review-note hidden"></p>
+        </div>
+        <div class="field-row">
+          <label>Submission mode
+            <select id="f_mode" class="input">
+              <option value="">—</option>
+              <option value="KC">KC (Kumon Connect)</option>
+              <option value="Paper">Paper</option>
+            </select>
+          </label>
+          <label>Date enrolled <input id="f_dateEnrolled" type="date" class="input" /></label>
+        </div>
+      </fieldset>
+
+      <p id="reviewNote" class="review-note hidden">
+        Imported from a source sheet where the teacher couldn't be confirmed — assign a teacher above to clear this flag.
+      </p>
+
+      <fieldset id="progressHistorySection" class="hidden">
+        <legend>Monthly progress history</legend>
+        <div id="progressHistoryList" class="progress-history"></div>
+      </fieldset>
+
+      <fieldset id="absentStatusSection" class="hidden">
+        <legend>Retention status</legend>
+        <p id="returneeBadge" class="field-hint hidden"></p>
+        <p id="absentStatusSummary" class="review-note hidden"></p>
+        <div id="riskSignalsSection" class="hidden">
+          <p class="field-hint">Risk signals -- auto-flagged from attendance and ASHR history, threshold-based:</p>
+          <div id="riskSignalsList"></div>
+        </div>
+        <p id="reportScopeHint" class="field-hint hidden">Reporting absent only affects this subject
+          enrollment. A student active in another subject stays Active overall; they only move to the
+          Absent tab once every subject is absent.</p>
+        <p class="field-hint">Notes -- editable any time (e.g. by a teacher, as the situation develops):</p>
+        <label class="grow">
+          <textarea id="f_absentNote" class="input" rows="2" placeholder="e.g. stopped attending, parent unresponsive since…"></textarea>
+        </label>
+        <button type="button" id="saveAbsentNoteBtn" class="btn btn-small">Save note</button>
+        <button type="button" id="reportAbsentBtn" class="btn btn-danger btn-small hidden">Report this subject absent</button>
+        <button type="button" id="reactivateBtn" class="btn btn-small hidden">Mark active again</button>
+      </fieldset>
+
+      <div id="panelDangerActions" class="panel-actions-danger hidden">
+        <button type="button" id="deleteEnrollmentBtn" class="btn btn-danger btn-small">Delete this enrollment</button>
+        <button type="button" id="deleteStudentBtn" class="btn btn-danger btn-small">Delete student entirely</button>
+      </div>
+
+      <div class="panel-actions">
+        <button type="button" id="cancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Edit a closed historical month's record -- password-gated, see README -->
+  <aside id="historyEditPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Edit historical record</h2>
+      <button id="historyPanelClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="historyEditForm" class="panel-body">
+      <input type="hidden" id="h_id" />
+      <p id="historyPanelSubtitle" class="history-panel-subtitle"></p>
+
+      <fieldset>
+        <legend>Goal</legend>
+        <div class="field-row">
+          <label>Goal level
+            <select id="h_goalLevel" class="input"></select>
+          </label>
+          <label>Goal page (1–200) <input id="h_goalPage" type="number" min="1" max="200" class="input" /></label>
+        </div>
+        <div class="field-row">
+          <label class="grow">Goal award
+            <select id="h_goalAward" class="input">
+              <option value="">— no award goal —</option>
+              <option value="KIS">KIS</option>
+              <option value="Bronze">Bronze</option>
+              <option value="Silver">Silver</option>
+              <option value="Gold">Gold</option>
+              <option value="ASF">ASF</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Actual</legend>
+        <div class="field-row">
+          <label>Actual level
+            <select id="h_actualLevel" class="input"></select>
+          </label>
+          <label>Actual page (1–200) <input id="h_actualPage" type="number" min="1" max="200" class="input" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Teacher</legend>
+        <div class="field-row">
+          <label class="grow">Teacher
+            <select id="h_teacher" class="input">
+              <option value="">— Unassigned —</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Admin password required</legend>
+        <div class="field-row">
+          <label class="grow">Password <input id="h_password" type="password" class="input" autocomplete="off" /></label>
+        </div>
+        <p id="historyPanelError" class="review-note hidden"></p>
+      </fieldset>
+
+      <div class="panel-actions">
+        <button type="button" id="historyCancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save correction</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Edit a locked ASHR award -- same password gate as historyEditPanel,
+       for correcting a permanent record after the fact. Editing a *live*
+       preview row instead opens the normal student editPanel, since a live
+       row is just a computed reflection of the student's current record. -->
+  <aside id="ashrEditPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Edit ASHR record</h2>
+      <button id="ashrPanelClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="ashrEditForm" class="panel-body">
+      <input type="hidden" id="ashr_id" />
+      <p id="ashrPanelSubtitle" class="history-panel-subtitle"></p>
+
+      <fieldset>
+        <legend>Award</legend>
+        <div class="field-row">
+          <label>Result
+            <select id="ashr_result" class="input">
+              <option value="KIS">KIS</option>
+              <option value="Bronze">Bronze</option>
+              <option value="Silver">Silver</option>
+              <option value="Gold">Gold</option>
+              <option value="ASF">ASF</option>
+              <option value="Completer">Completer</option>
+              <option value="Double Award">Double Award</option>
+              <option value="N/A">N/A</option>
+            </select>
+          </label>
+          <label class="grow">Level (as recorded) <input id="ashr_levelRaw" type="text" class="input" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Teacher</legend>
+        <div class="field-row">
+          <label class="grow">Teacher
+            <select id="ashr_teacher" class="input">
+              <option value="">— Unassigned —</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Admin password required</legend>
+        <div class="field-row">
+          <label class="grow">Password <input id="ashr_password" type="password" class="input" autocomplete="off" /></label>
+        </div>
+        <p id="ashrPanelError" class="review-note hidden"></p>
+      </fieldset>
+
+      <div class="panel-actions">
+        <button type="button" id="ashrCancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save correction</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Edit a student's payment record for one month, plus the standing
+       "needs attention" flag -- both saved together in one submit (see
+       upsertPaymentAndAttentionWithUndo in server.js for why they're one
+       endpoint, not two). Not password-gated -- unlike historyEditPanel/
+       ashrEditPanel, this is routine, frequent, teacher-facing data entry,
+       not a correction to permanent locked history. -->
+  <aside id="paymentEditPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Edit payment record</h2>
+      <button id="paymentPanelClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="paymentEditForm" class="panel-body">
+      <input type="hidden" id="pay_studentId" />
+      <input type="hidden" id="pay_month" />
+      <p id="paymentPanelSubtitle" class="history-panel-subtitle"></p>
+
+      <fieldset>
+        <legend>Statement of Account sent</legend>
+        <div class="field-row">
+          <label>SOA 1 (15th) <input id="pay_soa1" type="date" class="input" /></label>
+          <label>SOA 2 (20th) <input id="pay_soa2" type="date" class="input" /></label>
+        </div>
+        <div class="field-row">
+          <label>SOA 3 (25th — due date) <input id="pay_soa3" type="date" class="input" /></label>
+          <label>SOA 4 (30th) <input id="pay_soa4" type="date" class="input" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tuition &amp; payment amount</legend>
+        <div id="paymentTuitionSummary" class="review-note"></div>
+        <div class="field-row">
+          <label>Amount paid this month (₱)
+            <input id="pay_amountPaid" type="number" step="0.01" min="0" class="input" placeholder="0.00" />
+          </label>
+          <label>Paid on <input id="pay_paidDate" type="date" class="input" /></label>
+        </div>
+        <p class="review-note">
+          The system calculates what's owed automatically from grade + enrolled subjects — enter
+          the actual amount received, not the tuition rate. Leave blank if nothing's been paid yet.
+          Paying more than what's owed is fine; the extra becomes credit automatically applied to
+          next month.
+        </p>
+      </fieldset>
+
+      <!-- Receipts (Aug 27 follow-up): every receipt on record for this
+           student/month, drag-drop a new one directly here too (a second
+           entry point alongside the Payments row's own drop zone -- see
+           app.js's wireReceiptDropzone). Uploading is instant; nothing here
+           counts toward the amount paid above until Joanne verifies it from
+           the new Payment Verification tab. -->
+      <fieldset id="payReceiptsSection">
+        <legend>Receipts</legend>
+        <div id="payReceiptDropzone"></div>
+        <div id="payReceiptList" class="receipt-list"></div>
+        <p class="field-hint">
+          Drag a GCash/bank-transfer receipt screenshot here. The system tries to read the
+          reference number, amount, and date automatically; whatever it can't confidently read is
+          left blank for Joanne to fill in when she reviews it. Nothing here affects the amount paid
+          above until it's verified.
+        </p>
+      </fieldset>
+
+      <!-- Real Active/Absent status (Aug 27, moved here from a one-click row
+           button per Nina: "it doesn't necessarily need to be super easy
+           access" -- same underlying action as the Roster/Absent edit
+           panel's "Report absent" button, see tagPaymentRowAbsent in
+           app.js). Every student listed in the Payments tab is Active by
+           definition (an Absent student is promoted off this list entirely),
+           so this always starts on the Active badge -- no Reactivate state
+           needed here. -->
+      <fieldset id="payAbsentStatusSection">
+        <legend>Retention status</legend>
+        <div class="field-row">
+          <span id="payStatusBadge" class="badge badge-active">Active</span>
+          <button type="button" id="payMarkAbsentBtn" class="btn btn-danger btn-small">Mark absent</button>
+        </div>
+        <p class="field-hint">
+          This is the real Active/Absent status that also drives the Roster and the Absent tab —
+          separate from the "finally absent" billing note below. A student with more than one active
+          subject gets a quick picker for which one(s) to report; reporting their only remaining
+          active subject also moves them to the Absent tab.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Attendance reporting</legend>
+        <div class="field-row">
+          <label>Marked "finally absent" on <input id="pay_absentDate" type="date" class="input" /></label>
+        </div>
+        <p class="review-note">
+          "Finally absent" is what gets reported to head office as of right now. If a payment
+          comes in later, record it above too — the record shows both, flagged as paid late rather
+          than silently overwriting what was already reported.
+        </p>
+        <p id="paymentReconciledNote" class="admin-success hidden"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Notes</legend>
+        <textarea id="pay_notes" class="input" rows="3" placeholder="e.g. promised to pay after payday on the 30th"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>Needs attention</legend>
+        <label class="checkbox-label">
+          <input id="pay_needsAttention" type="checkbox" />
+          Flag this student for teacher follow-up
+        </label>
+        <p class="review-note">
+          For retention concerns, not payment — e.g. a parent hinted they might stop, or the
+          student needs extra encouragement so their progress doesn't stall.
+        </p>
+        <textarea id="pay_needsAttentionNote" class="input" rows="2" placeholder="Why this student needs attention"></textarea>
+      </fieldset>
+
+      <div class="panel-actions">
+        <button type="button" id="paymentCancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- "Tag absent" from the Payments tab (Aug 25, per Nina: "in the payments
+       tab i want a way to tag students absent"). This is the SAME real
+       Active/Absent status as the Roster's "Report absent" button, not the
+       separate billing-only "marked finally absent" date field above --
+       confirmed with Nina directly, since the app already had two different
+       things called "absent" and she picked the real status change. A
+       Payments row bills a student as one combined amount but absence is
+       still tracked per subject underneath, so this panel only appears when
+       a student has more than one active subject (see openAbsentTagPanel in
+       app.js) -- a single-subject student is reported absent directly with
+       a confirm() dialog instead, no picker needed. Aug 27 follow-up: this
+       is now reached from the "Mark absent" button inside the Payments
+       tab's Edit panel (payAbsentStatusSection above) rather than a
+       one-click button on the row itself -- Nina felt the row button made
+       it too easy to trigger by accident. -->
+  <aside id="absentTagPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Report absent</h2>
+      <button id="absentTagPanelClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="absentTagForm" class="panel-body">
+      <input type="hidden" id="tag_studentId" />
+      <p id="absentTagSubtitle" class="history-panel-subtitle"></p>
+      <p class="review-note">
+        This is the real status shown on the Roster and the Absent tab, not just a payment note.
+        Choose which subject(s) to report absent — any left unchecked stay Active.
+      </p>
+      <fieldset>
+        <legend>Subjects</legend>
+        <div id="absentTagSubjectList"></div>
+      </fieldset>
+      <div class="panel-actions">
+        <button type="button" id="absentTagCancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-danger">Report absent</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Full-size receipt image viewer (Aug 27 follow-up) -- a bare modal,
+       just the image, opened by clicking any receipt thumbnail on the
+       Payments row, the Edit panel's Receipts list, or the Payment
+       Verification queue (see openReceiptViewer in app.js). -->
+  <aside id="receiptViewerPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Receipt</h2>
+      <button id="receiptViewerClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <div class="panel-body">
+      <img id="receiptViewerImg" src="" alt="Receipt image" />
+    </div>
+  </aside>
+
+  <!-- Whole-billing-group receipt split (Aug 27, same-day follow-up) -- Nina
+       ran into this in real use: dropped the same receipt onto three
+       siblings' rows individually, verified all three, and each got
+       credited the FULL family payment instead of their own share. Shown
+       right after a drop when the target student belongs to a billing
+       group, offering "just this student" (skips this panel entirely,
+       behaves exactly as before) or "split across the group" (opens this).
+       Amounts default to each member's own remaining balance for the month
+       (fetched from the same /api/payments/:id/soa the group SOA/download
+       button already uses -- never a second due-amount calculation), and
+       stay editable here before the upload actually happens. See
+       openReceiptGroupSplitPanel / confirmReceiptGroupSplit in app.js. -->
+  <aside id="receiptGroupSplitPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Split this receipt across the group</h2>
+      <button id="receiptGroupSplitClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="receiptGroupSplitForm" class="panel-body">
+      <p id="receiptGroupSplitSubtitle" class="history-panel-subtitle"></p>
+      <p class="review-note">
+        Defaults to each member's own remaining balance this month -- adjust any amount below before
+        uploading. Only members with an amount entered get a receipt; leave one at zero to leave them
+        out of this particular payment.
+      </p>
+      <div id="receiptGroupSplitMembers"></div>
+      <p id="receiptGroupSplitTotal" class="field-hint"></p>
+      <div class="panel-actions">
+        <button type="button" id="receiptGroupSplitCancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- New/rename a billing group (Aug 25 follow-up) -- member add/remove
+       happens inline on the tab itself, not in this panel; this is just the
+       group's own name/notes. -->
+  <aside id="billingGroupEditPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2 id="billingGroupPanelTitle">New billing group</h2>
+      <button id="billingGroupPanelClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <form id="billingGroupEditForm" class="panel-body">
+      <input type="hidden" id="bg_id" />
+      <fieldset>
+        <legend>Group</legend>
+        <div class="field-row">
+          <label class="grow">Billing group title
+            <input id="bg_name" required class="input" placeholder="e.g. Smith Family, or the payer's own name" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="grow">Notes
+            <textarea id="bg_notes" class="input" rows="2" placeholder="optional"></textarea>
+          </label>
+        </div>
+      </fieldset>
+      <div class="panel-actions">
+        <button type="button" id="billingGroupCancelBtn" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Admin actions -- deliberately separated from the everyday roster
+       toolbar, since these are meaningfully heavier actions (rewriting
+       permanent history, changing who can edit it) than a normal save. -->
+  <aside id="adminPanel" class="panel modal-panel hidden">
+    <div class="panel-header">
+      <h2>Admin</h2>
+      <button id="adminPanelClose" type="button" class="btn-icon" aria-label="Close">×</button>
+    </div>
+    <div class="panel-body">
+      <fieldset>
+        <legend>Current month</legend>
+        <p id="adminActiveMonthLabel" class="history-panel-subtitle"></p>
+        <p class="review-note">
+          Closing saves everyone's current Goal and Actual as this month's
+          permanent history, then clears the Goal field so next month starts
+          blank. Current level/page is not affected.
+        </p>
+        <button id="adminCloseMonthBtn" type="button" class="btn btn-primary">Close month</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>ASHR</legend>
+        <p id="adminAshrCycleLabel" class="history-panel-subtitle"></p>
+        <p class="review-note">
+          Locking in saves the current live-preview tiers (Math and Reading)
+          as this cycle's permanent record, then moves to the next cycle.
+        </p>
+        <button id="adminLockAshrBtn" type="button" class="btn btn-primary">Lock in cycle</button>
+        <p id="adminAshrError" class="review-note hidden"></p>
+        <p id="adminAshrSuccess" class="admin-success hidden"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Admin password</legend>
+        <p class="review-note">
+          Anyone with this password can edit an already-closed month's
+          history. There's no login system yet, so this is a shared password,
+          not a per-person account — change it here any time.
+        </p>
+        <div class="field-row">
+          <label class="grow">Current password
+            <input id="admin_currentPassword" type="password" class="input" autocomplete="off" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="grow">New password
+            <input id="admin_newPassword" type="password" class="input" autocomplete="off" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="grow">Confirm new password
+            <input id="admin_confirmPassword" type="password" class="input" autocomplete="off" />
+          </label>
+        </div>
+        <button id="adminChangePasswordBtn" type="button" class="btn btn-primary">Update password</button>
+        <p id="adminPasswordError" class="review-note hidden"></p>
+        <p id="adminPasswordSuccess" class="admin-success hidden"></p>
+      </fieldset>
+    </div>
+  </aside>
+
+  <script src="/app.js"></script>
+</body>
+</html>

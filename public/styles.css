@@ -1,0 +1,1373 @@
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --border: #e2e5ea;
+  --text: #1c2128;
+  --text-muted: #667085;
+  /* Aug 27 -- switched from green to a Kumon blue (Nina: "change all the
+     colors from green to a kumon blue"), matching the blue used in Kumon's
+     own branding. This one variable trio is the app's single accent color
+     source -- every button, tab underline, badge, and highlight elsewhere
+     in this file reads var(--accent)/var(--accent-hover)/var(--accent-soft)
+     rather than a hardcoded color, so changing the brand color is just
+     these three lines. Deepened slightly from Kumon's lighter marketing
+     blue (~#1B98D2) so white button text keeps sufficient contrast (this
+     shade is ~5.4:1 against white, comfortably passing WCAG AA; the
+     lighter marketing blue was only ~3.2:1). Does NOT touch the Math/
+     Reading subject-icon colors elsewhere in this file -- those are an
+     unrelated categorical color-coding (Math=blue, Reading=red), not the
+     brand accent, and Math already being blue made touching them here
+     more likely to create confusion than clarity. */
+  --accent: #0b6fa8;
+  --accent-hover: #095986;
+  --accent-soft: #e7f2f8;
+  --warn: #b45309;
+  --warn-soft: #fef3e0;
+  --danger: #b42318;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-title h1 {
+  font-size: 22px;
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  border: none;
+  background: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: inherit;
+}
+
+.tab-btn:hover { color: var(--text); }
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.hidden { display: none; }
+.view.hidden { display: none; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+.search-input {
+  min-width: 240px;
+  flex-shrink: 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.result-count {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn:hover { background: var(--bg); }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled, .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Delete buttons in the edit panel (Aug 20) -- outlined in --danger rather
+   than filled, so they read as serious but don't compete visually with the
+   filled .btn-primary Save button for attention. */
+.btn-danger {
+  background: var(--surface);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.btn-danger:hover { background: #fdecea; }
+.panel-actions-danger {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.input:disabled { background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
+
+.history-notice {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+
+.month-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0 0 12px;
+}
+.active-month-label {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.btn-small {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.link-btn:hover { text-decoration: underline; }
+
+.toolbar-secondary {
+  padding-top: 10px;
+  margin-top: -6px;
+  border-top: 1px dashed var(--border);
+}
+/* .toolbar's own `display: flex` is declared after the generic `.hidden`
+   rule earlier in this file, so with equal selector specificity it would
+   otherwise win the cascade and the row would stay visible -- same fix
+   already used for .view.hidden/.panel.hidden/.modal-panel.hidden below. */
+.toolbar-secondary.hidden {
+  display: none;
+}
+
+.toolbar-bulk {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: -4px 0 16px;
+}
+/* Same cascade-order fix as .toolbar-secondary.hidden above -- .toolbar's
+   own `display: flex` is declared earlier in this file with equal
+   specificity, so without this override the bulk bar would stay visible
+   even while carrying the `hidden` class. */
+.toolbar-bulk.hidden {
+  display: none;
+}
+
+.admin-success {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+.admin-success.hidden { display: none; }
+.field-hint {
+  text-transform: none;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: normal;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+
+.btn-icon:hover { color: var(--text); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.roster-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+  white-space: nowrap;
+}
+
+.roster-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.roster-table tbody tr:last-child td { border-bottom: none; }
+.roster-table tbody tr:hover { background: #fbfbfc; }
+.roster-table tbody tr.needs-review { background: var(--warn-soft); }
+.roster-table tbody tr.needs-review:hover { background: #fbe8c8; }
+
+.student-name { font-weight: 600; }
+.student-grade { color: var(--text-muted); font-size: 12px; }
+
+.level-cell { font-variant-numeric: tabular-nums; }
+.level-code { font-weight: 600; }
+.level-raw-note { color: var(--text-muted); font-size: 11px; }
+.no-level { color: var(--text-muted); font-style: italic; }
+
+.teacher-unassigned {
+  color: var(--warn);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.teacher-inactive {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-active { background: var(--accent-soft); color: var(--accent); }
+.badge-absent { background: #eef0f2; color: var(--text-muted); }
+.badge-returnee { background: var(--warn-soft); color: var(--warn); }
+
+/* Aug 25 -- Absent tab "months absent" duration badges (Nina: "show
+   historical data so the past 4 months"). Deliberately separate from
+   .badge-active/.badge-absent above -- those describe roster status
+   (whether), these describe how long, escalating in urgency: a fresh
+   report reads calm, the middle months read neutral, the 4-month mark
+   (the roadmap's last chance before a re-registration fee applies) reads
+   as a warning, and past that reuses the same red as risk-flag/.badge for
+   "past the window entirely." */
+.badge-duration { background: var(--accent-soft); color: var(--accent); }
+.badge-duration-mid { background: #eef0f2; color: var(--text-muted); }
+.badge-duration-warn { background: var(--warn-soft); color: var(--warn); }
+.risk-flag {
+  background: #fdecea;
+  color: var(--danger);
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  max-width: 260px;
+  white-space: normal;
+  line-height: 1.3;
+}
+.risk-signals-cell { max-width: 280px; }
+
+.row-edit-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.row-edit-btn:hover { text-decoration: underline; }
+
+/* Aug 27 -- download icon on the Payments row's "SOA" button, replacing
+   the plain "⬇" character per Nina's reference image (a rounded-square
+   download glyph). Inline SVG, no icon library, same zero-dependency
+   pattern as the rest of this app -- uses currentColor so it always
+   matches the button's own text color (the accent blue above) with no
+   separate color rule to keep in sync. */
+.btn-icon-download {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+/* Payments tab "Mark absent" row action (Aug 25) -- same link-style button
+   as .row-edit-btn above, just colored like the other absence-reporting
+   controls (see .btn-danger) so it visually reads as more consequential
+   than a routine Edit click. */
+.row-danger-link { color: var(--danger); }
+
+.loading, .empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 0 !important;
+}
+
+/* Slide-over panel */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.35);
+  z-index: 10;
+}
+.overlay.hidden { display: none; }
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 420px;
+  max-width: 92vw;
+  background: var(--surface);
+  box-shadow: -8px 0 24px rgba(16, 24, 40, 0.12);
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+}
+.panel.hidden { display: none; }
+
+/* Centered modal variant of .panel, used for the password-gated historical
+   edit form -- can be opened on top of the right-docked panel (editing a
+   past record from inside a student's profile) without visually colliding
+   with it. */
+.modal-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  height: auto;
+  max-height: 88vh;
+  width: 440px;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(16, 24, 40, 0.28);
+  z-index: 13;
+  overflow-y: auto;
+}
+.modal-panel.hidden { display: none; }
+
+.history-panel-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-header h2 { font-size: 16px; margin: 0; }
+
+.panel-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 18px;
+}
+legend {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.field-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.field-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.field-row label.grow { flex: 1 1 100%; }
+.field-row .input { width: 100%; }
+
+.review-note {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+.review-note.hidden { display: none; }
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Day + time picker */
+.schedule-picker { margin-bottom: 18px; }
+.schedule-picker-legend {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.schedule-days {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.schedule-day-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.schedule-day-row label.day-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 60px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.schedule-day-row .input {
+  max-width: 150px;
+  padding: 5px 8px;
+}
+.schedule-day-row .input:disabled {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+.schedule-day-row .day-mode {
+  max-width: 64px;
+  flex-shrink: 0;
+}
+
+/* Calendar view */
+.calendar-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  padding: 4px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 72px repeat(6, minmax(140px, 1fr));
+  min-width: 960px;
+}
+
+.cal-cell {
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  padding: 6px;
+  min-height: 32px;
+}
+
+.cal-head {
+  position: sticky;
+  top: 0;
+  background: #fafbfc;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 6px;
+  font-weight: 600;
+}
+
+.cal-time-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 6px 8px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-chip {
+  display: block;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 2px 6px;
+  border-radius: 5px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Subject-only coloring everywhere on the calendar (blue=Math/red=Reading),
+   per the Master Platform Specification -- previously the center-wide view
+   colored by team group instead, so the same chip could show a different
+   color depending on which filter was active. Reading gets a distinct red,
+   deliberately not the same red as .risk-flag/.payment-badge.absent
+   (var(--danger)) so a Reading chip doesn't visually read as an
+   error/warning next to those.
+   Aug 27, 2026: Math's blue was originally its own separate hardcoded
+   indigo (#3548a8/#e9edfb), independent of the app's brand accent by
+   design. Nina asked for the Weekly Calendar's blue to match the new
+   Kumon-blue accent too, so Math now reuses the exact --accent/
+   --accent-soft values instead of a fourth hardcoded blue -- still a
+   plain hex snapshot here (not var(...)), so a future accent-only
+   rebrand (e.g. buttons alone) won't silently recolor Math too. */
+.cal-chip.math { background: #e7f2f8; color: #0b6fa8; }
+.cal-chip.reading { background: #fbeaea; color: #b3261e; }
+.cal-chip.inactive-teacher { opacity: 0.55; text-decoration: line-through; }
+
+/* Subject icons (Aug 20 follow-up, Payments tab) -- small circular badges
+   next to a student's name showing which subject(s) they're active in.
+   Reuses the exact blue=Math/red=Reading colors from .cal-chip above for
+   platform-wide consistency rather than inventing a third color scheme. */
+.subject-icons { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; }
+.subject-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  font-size: 10px; font-weight: 700; line-height: 1;
+}
+.subject-icon.math { background: #e7f2f8; color: #0b6fa8; }
+.subject-icon.reading { background: #fbeaea; color: #b3261e; }
+
+/* RI/IC mode tag (Aug 20) -- color is already spoken for by subject, so RI
+   gets a small text tag instead of a second color; IC (the default/common
+   case) gets no tag at all, to keep most chips clean. */
+.mode-tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.mode-tag.ri { background: rgba(0, 0, 0, 0.12); color: inherit; }
+.mode-tag.review { background: var(--warn); color: #fff; }
+
+.cal-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px;
+  grid-column: 1 / -1;
+}
+
+/* Today's column + attendance marking */
+.cal-head-today { color: var(--accent); }
+.cal-col-today { background: #fbfdfc; }
+
+.cal-chip.not-attended { border: 1px dashed rgba(0, 0, 0, 0.18); }
+.cal-chip.attended { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08); }
+
+.attend-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 10px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.attend-toggle:hover { background: rgba(0, 0, 0, 0.08); }
+
+/* "Not arrived today" follow-up panel */
+.attendance-summary {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.attendance-summary-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.attendance-summary-header h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.attendance-summary-hint {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.not-arrived-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.not-arrived-group {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.not-arrived-group:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.not-arrived-teacher {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.not-arrived-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 13px;
+}
+.not-arrived-name { font-weight: 500; }
+.not-arrived-meta { color: var(--text-muted); font-size: 12px; }
+
+/* Billing Groups tab (Aug 25 follow-up) -- one card per group, unlike every
+   other tab's flat table, since a group's member list is the whole point
+   rather than a row property. */
+.billing-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.billing-group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.billing-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.billing-group-name { font-weight: 600; font-size: 14px; }
+.billing-group-notes { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+.billing-group-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.billing-group-total {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.billing-group-total .no-level { font-weight: 400; margin-left: 4px; }
+.billing-group-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.billing-group-members {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.billing-group-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.billing-group-member-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.billing-group-member-amount {
+  flex-shrink: 0;
+  width: 90px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.billing-group-member .link-btn { flex-shrink: 0; }
+.billing-group-add {
+  margin-top: 10px;
+  position: relative;
+}
+.billing-group-add input {
+  width: 100%;
+  max-width: 320px;
+}
+.billing-group-add-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-width: 320px;
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  padding: 4px;
+  z-index: 30;
+}
+.billing-group-add-results:empty { display: none; }
+.billing-group-add-results p { margin: 0; padding: 6px 8px; }
+.billing-group-add-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.billing-group-add-result:hover,
+.billing-group-add-result.is-active {
+  background: var(--accent-soft);
+}
+.billing-group-add-result.is-selected { background: var(--accent-soft); }
+.bg-add-checkbox {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+}
+.billing-group-add-result.is-selected .bg-add-checkbox {
+  background: var(--accent);
+  border-color: var(--accent);
+  position: relative;
+}
+.billing-group-add-result.is-selected .bg-add-checkbox::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Multi-select pending chips (Aug 25 follow-up) -- staged students not yet
+   committed to the group, shown between the search input and the results
+   dropdown so they stay visible even after the dropdown itself closes. */
+.billing-group-add-pending {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.billing-group-add-pending:empty { margin-top: 0; }
+.bg-add-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 3px 6px 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.bg-add-chip-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+/* Monthly progress history (edit panel) */
+.progress-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.progress-subject-group { }
+.progress-subject-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.progress-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.progress-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.progress-table tbody tr:last-child td { border-bottom: none; }
+.edited-badge {
+  display: block;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-style: italic;
+}
+
+/* ASHR view */
+.cycle-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.cycle-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+.cycle-pill:hover { background: var(--bg); }
+.cycle-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ashr-live-note {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+.ashr-live-note.hidden { display: none; }
+
+.summary-strip {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.summary-card {
+  flex: 1;
+  min-width: 96px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.summary-count {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.summary-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.summary-card.tier-kis { border-top-color: #6b7280; }
+.summary-card.tier-bronze { border-top-color: #b45309; }
+.summary-card.tier-silver { border-top-color: #64748b; }
+.summary-card.tier-gold { border-top-color: #ca8a04; }
+.summary-card.tier-asf { border-top-color: #7c3aed; }
+.summary-card.tier-completer { border-top-color: var(--accent); }
+.summary-card.tier-double { border-top-color: var(--border); }
+.summary-card.tier-na { border-top-color: var(--border); }
+
+.tier-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tier-badge.kis { background: #eef0f2; color: #4b5563; }
+.tier-badge.bronze { background: #fdf0e3; color: #b45309; }
+.tier-badge.silver { background: #eef1f5; color: #475569; }
+.tier-badge.gold { background: #fef7e0; color: #a16207; }
+.tier-badge.asf { background: #f1e8fd; color: #6d28d9; }
+.tier-badge.completer { background: var(--accent-soft); color: var(--accent); }
+.tier-badge.double { background: #eef0f2; color: var(--text-muted); }
+.tier-badge.na { background: #eef0f2; color: var(--text-muted); }
+
+.status-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.status-tag.status-live { color: var(--warn); font-weight: 600; }
+.status-tag.status-locked { color: var(--text-muted); }
+
+/* Payments tab + Roster payment badge */
+.payment-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.payment-badge.paid { background: var(--accent-soft); color: var(--accent); }
+.payment-badge.partial { background: var(--warn-soft); color: var(--warn); }
+.payment-badge.advance { background: #e8f0fd; color: #1d4ed8; }
+.payment-badge.unpaid { background: #eef0f2; color: var(--text-muted); }
+.payment-badge.absent { background: #fdecea; color: var(--danger); }
+
+/* Receipt verification status (Aug 27 follow-up) -- reuses .payment-badge's
+   shape, own color per state: pending-review is "awaiting a look" (same
+   amber as .partial), flagged is "a problem was found" (same red as
+   .absent, distinct from pending so the queue reads at a glance which rows
+   still need a first look vs. which already have a known issue), verified
+   is "confirmed, trusted" (same blue/accent as .paid), rejected is "closed,
+   discarded" (same neutral gray as .unpaid -- no longer urgent). */
+.payment-badge.pending-review { background: var(--warn-soft); color: var(--warn); }
+.payment-badge.flagged { background: #fdecea; color: var(--danger); }
+.payment-badge.verified { background: var(--accent-soft); color: var(--accent); }
+.payment-badge.rejected { background: #eef0f2; color: var(--text-muted); }
+
+.tuition-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--warn);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: help;
+}
+
+.balance-due { color: var(--danger); font-weight: 600; }
+.balance-credit { color: var(--accent); font-weight: 600; }
+
+.reconciled-note {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--warn);
+}
+
+.attention-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: help;
+}
+
+.summary-card.payment-summary-paid { border-top-color: var(--accent); }
+.summary-card.payment-summary-partial { border-top-color: var(--warn); }
+.summary-card.payment-summary-advance { border-top-color: #1d4ed8; }
+.summary-card.payment-summary-unpaid { border-top-color: var(--border); }
+.summary-card.payment-summary-absent { border-top-color: var(--danger); }
+
+/* Aug 25 -- Absent tab's "months absent" bucket strip, same escalation as
+   the duration badges above. */
+.summary-card.absent-bucket-0 { border-top-color: var(--accent); }
+.summary-card.absent-bucket-1,
+.summary-card.absent-bucket-2,
+.summary-card.absent-bucket-3 { border-top-color: var(--border); }
+.summary-card.absent-bucket-4 { border-top-color: var(--warn); }
+.summary-card.absent-bucket-outside { border-top-color: var(--danger); }
+.summary-card.absent-bucket-unknown { border-top-color: var(--border); }
+
+/* Aug 25 -- Combined Family SOA (Phase 5) was originally rendered both as
+   an on-screen HTML statement (in a dedicated SOA tab) and exported as a
+   PNG. The SOA tab was deleted Aug 27 (Payments tab's per-row "⬇ SOA"
+   button covers the same need in fewer clicks), taking its on-screen HTML
+   renderer with it -- the .soa-* classes that styled it are gone too. The
+   PNG export survives (drawn by hand onto a <canvas>, not styled by CSS at
+   all) -- see drawSoaContent in app.js. */
+
+/* Receipt upload + verification (Aug 27 follow-up) -- Nina: teachers drag a
+   GCash/bank-transfer receipt screenshot straight onto a student's Payments
+   row instead of emailing it; Joanne verifies/flags/rejects from a new
+   Payment Verification tab. See app.js's receipt upload/render functions
+   and server.js's payment_receipt routes. */
+
+/* The Payments table's new "Receipt" cell -- either an empty dashed drop
+   target (no receipt yet this month) or a compact chip once one exists.
+   The cell itself is the drop zone (not the whole row), so it doesn't
+   fight with the row's own click-to-select checkbox or other controls. */
+.receipt-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 92px;
+  padding: 5px 8px;
+  border: 1.5px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: default;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.receipt-dropzone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.receipt-dropzone .receipt-icon { width: 13px; height: 13px; flex: none; }
+
+/* Once a receipt exists, the cell becomes a clickable chip (thumbnail +
+   status pill) instead of the empty dashed placeholder -- clicking opens
+   the Edit panel's Receipts section (see #payReceiptsSection) so multiple
+   receipts / OCR'd fields / re-upload all live in one place. Still accepts
+   a drop directly (adding a second receipt for a partial payment) without
+   needing to open the panel first. */
+.receipt-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.receipt-chip:hover { border-color: var(--accent); }
+.receipt-chip .receipt-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex: none;
+}
+.receipt-chip .receipt-chip-count {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+/* Badge shown on a receipt chip/list item and the Verification queue's
+   combined card (Aug 27 follow-up) -- the visual cue that this receipt
+   covers a whole billing group, not just the student it's showing on. */
+.receipt-chip-group {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Edit panel's Receipts fieldset -- a drop zone for adding one, plus a
+   list of every receipt on record for this student/month (newest first,
+   same order the API returns them in). */
+#payReceiptsSection .receipt-dropzone {
+  width: 100%;
+  min-width: 0;
+  padding: 14px 8px;
+  font-size: 12px;
+}
+.receipt-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.receipt-list-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.receipt-list-item .receipt-thumb-lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex: none;
+  cursor: zoom-in;
+}
+.receipt-list-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.receipt-list-item-fields { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); }
+.receipt-list-item-note { font-size: 11px; color: var(--text-muted); font-style: italic; }
+.receipt-list-item-meta { font-size: 10px; color: var(--text-muted); }
+
+/* Payment Verification tab -- Joanne's queue, one card per receipt still
+   awaiting a decision. Cards rather than a dense table since each one
+   needs a decently sized thumbnail to actually compare against a bank
+   statement, plus three action buttons -- a table row would cramp both. */
+#verificationQueue { display: flex; flex-direction: column; gap: 12px; }
+.verify-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.verify-card.is-flagged { border-color: var(--danger); }
+.verify-card-thumb {
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex: none;
+  cursor: zoom-in;
+  background: #fafbfc;
+}
+.verify-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.verify-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.verify-card-student { font-weight: 600; }
+.verify-card-meta { font-size: 11px; color: var(--text-muted); }
+.verify-card-fields { display: flex; flex-wrap: wrap; gap: 10px; }
+.verify-card-fields label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--text-muted); }
+.verify-card-fields input { width: 140px; }
+.verify-card-ocr-note { font-size: 11px; color: var(--text-muted); }
+.verify-card-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.verify-card-note-input { flex: 1; min-width: 160px; }
+
+.btn-verify { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.btn-verify:hover { background: var(--accent); color: #fff; }
+.btn-flag { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.btn-flag:hover { background: var(--warn); color: #fff; }
+.btn-reject { background: #fdecea; color: var(--danger); border-color: transparent; }
+.btn-reject:hover { background: var(--danger); color: #fff; }
+.btn-icon-inline { width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; }
+
+/* Combined group card (Aug 27 follow-up) -- same .verify-card shell, plus
+   a per-member amount row and an escape hatch back to the original
+   one-card-per-receipt view for anyone who'd rather decide separately. */
+.verify-group-members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafbfc;
+}
+.verify-group-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.verify-group-member-name { font-size: 12px; }
+.verify-group-member label { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+.verify-group-member input { width: 110px; }
+.btn-link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Full-size receipt viewer -- a plain modal overlay reusing the app's
+   existing #overlay element (see hideOverlayIfAllClosed's panel-id list in
+   app.js), just an image with nothing else in it. */
+#receiptViewerPanel { max-width: min(90vw, 640px); }
+#receiptViewerPanel img { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+/* Whole-group receipt split panel (Aug 27 follow-up) -- one row per
+   billing-group member, defaulting to their own remaining balance. */
+#receiptGroupSplitMembers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.receipt-split-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.receipt-split-member-name { font-size: 13px; font-weight: 500; }
+.receipt-split-member input { width: 120px; }
+#receiptGroupSplitTotal { margin-top: 4px; font-weight: 600; }
+
+.no-receipts-note { font-size: 12px; color: var(--text-muted); }

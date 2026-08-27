@@ -1,0 +1,16 @@
+{
+  "name": "kumon-roster-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kumon Iligan City Learning Center — Student & Subject-Enrollment Roster (foundation page)",
+  "engines": { "node": ">=22.5.0" },
+  "scripts": {
+    "start": "node server.js",
+    "reset-db": "rm -f data/roster.db && node -e \"require('./lib/db').getDb()\" && echo 'Database reseeded from data/seed-data.json'"
+  },
+  "dependencies": {
+    "pg": "^8.11.0",
+    "@vercel/blob": "^2.3.0",
+    "express": "^4.21.0"
+  }
+}
