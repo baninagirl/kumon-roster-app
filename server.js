@@ -183,8 +183,9 @@ async function attachPaymentStatus(db, rows, month) {
   const counts = await activeSubjectCounts(db, ids);
   const grades = {};
   for (const r of rows) if (!(r.student_id in grades)) grades[r.student_id] = r.grade;
+  const recordCache = await buildPaymentRecordCache(db, ids);
   const summaries = {};
-  for (const id of ids) summaries[id] = await computePaymentSummary(db, id, grades[id], counts[id], month);
+  for (const id of ids) summaries[id] = await computePaymentSummary(db, id, grades[id], counts[id], month, 0, recordCache);
   for (const r of rows) {
     const s = summaries[r.student_id];
     r.payment_status = s.status;
@@ -816,6 +817,34 @@ async function activeSubjectCounts(db, studentIds) {
   return out;
 }
 
+// Aug 28 (Vercel go-live follow-up): one batch fetch of every payment_record
+// row for a set of students, reshaped into student_id -> month -> row.
+// computePaymentSummary() below was originally written against SQLite,
+// where a per-student, per-month `db.prepare(...).get()` lookup was
+// effectively free (same process, no network hop). Against real Postgres
+// over the network, calling it in a per-student loop (attachPaymentStatus,
+// listPayments) meant two real round trips per student -- 1096 students on
+// the real roster meant ~2200+ sequential round trips to answer one page
+// load, which is what actually broke production once real data-scale
+// traffic hit it (surfaced as the Roster/Payments tabs hanging on
+// deploy). Pre-fetching every relevant row in one query and handing
+// computePaymentSummary a plain in-memory lookup instead removes that
+// entirely, with zero change to the actual payment math -- see
+// computePaymentSummary's `cache` parameter below.
+async function buildPaymentRecordCache(db, studentIds) {
+  const cache = new Map();
+  if (!studentIds.length) return cache;
+  const placeholders = studentIds.map(() => '?').join(',');
+  const rows = await db.prepare(
+    `SELECT * FROM payment_record WHERE student_id IN (${placeholders})`
+  ).all(...studentIds);
+  for (const r of rows) {
+    if (!cache.has(r.student_id)) cache.set(r.student_id, new Map());
+    cache.get(r.student_id).set(r.month, r);
+  }
+  return cache;
+}
+
 // The amount actually credited toward a month. If amount_paid was entered,
 // use it. Otherwise, a legacy row from before amount-tracking existed
 // (paid_date set, amount_paid still NULL) is read as "paid in full" -- see
@@ -849,19 +878,31 @@ function round2(n) {
 // Sept 2026 onward the chain is real and carries correctly month to month
 // (recursion naturally terminates the first time it hits a month with no
 // existing row).
-async function computePaymentSummary(db, studentId, grade, activeCount, month, _depth) {
+// `cache`, when passed, is a Map<studentId, Map<month, record>> from
+// buildPaymentRecordCache() above -- when present, every lookup below reads
+// from it instead of issuing a real query, so a big batch caller (a whole
+// roster/payments page) only pays for one query total, not two per
+// student. Omitted (undefined), this behaves exactly as it always has --
+// the low-traffic single-student/single-group call sites (SOA generation,
+// "mark paid") are left querying per-call, since there's no meaningful cost
+// there and no reason to touch code that already works.
+async function computePaymentSummary(db, studentId, grade, activeCount, month, _depth, cache) {
   const depth = _depth || 0;
   const normalizedGrade = ashr.normalizeGrade(grade);
   const tuitionInfo = tuition.computeTuitionDue(normalizedGrade, activeCount);
-  const record = await db.prepare(`SELECT * FROM payment_record WHERE student_id = ? AND month = ?`).get(studentId, month);
+  const record = cache
+    ? (cache.get(studentId) ? cache.get(studentId).get(month) : undefined) || null
+    : await db.prepare(`SELECT * FROM payment_record WHERE student_id = ? AND month = ?`).get(studentId, month);
 
   let previousBalance = 0;
   let advanceAvailable = 0;
   if (depth < 24) { // sanity bound only -- real chains are far shorter, bounded by actual recorded months
     const prevMonth = payments.addMonths(month, -1);
-    const prevExists = await db.prepare(`SELECT 1 FROM payment_record WHERE student_id = ? AND month = ?`).get(studentId, prevMonth);
+    const prevExists = cache
+      ? !!(cache.get(studentId) && cache.get(studentId).has(prevMonth))
+      : await db.prepare(`SELECT 1 FROM payment_record WHERE student_id = ? AND month = ?`).get(studentId, prevMonth);
     if (prevExists) {
-      const prevSummary = await computePaymentSummary(db, studentId, grade, activeCount, prevMonth, depth + 1);
+      const prevSummary = await computePaymentSummary(db, studentId, grade, activeCount, prevMonth, depth + 1, cache);
       if (prevSummary.remainingBalance > 0) previousBalance = prevSummary.remainingBalance;
       else advanceAvailable = -prevSummary.remainingBalance;
     }
@@ -959,10 +1000,12 @@ async function listPayments(db, query) {
   }
 
   const today = todayInfo().date;
-  const counts = await activeSubjectCounts(db, rows.map((r) => r.student_id));
-  const receiptsByStudent = await receiptsForStudentsMonth(db, rows.map((r) => r.student_id), month);
+  const studentIds = rows.map((r) => r.student_id);
+  const counts = await activeSubjectCounts(db, studentIds);
+  const receiptsByStudent = await receiptsForStudentsMonth(db, studentIds, month);
+  const recordCache = await buildPaymentRecordCache(db, studentIds);
   let out = await Promise.all(rows.map(async (r) => {
-    const summary = await computePaymentSummary(db, r.student_id, r.grade, counts[r.student_id], month);
+    const summary = await computePaymentSummary(db, r.student_id, r.grade, counts[r.student_id], month, 0, recordCache);
     const list = teachersByStudent[r.student_id] || [];
     const teacherLabel = [...new Set(list.map((t) => t.nickname || t.legal_name).filter(Boolean))].join(', ') || 'Unassigned';
     const subjects = [...new Set(list.map((t) => t.subject).filter(Boolean))].sort();
