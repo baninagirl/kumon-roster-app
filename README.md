@@ -3179,6 +3179,7 @@ the app's own database, per the read-only rule.
 ## Project layout
 
 ```
+
 server.js          -- HTTP server + JSON API (no framework)
 lib/db.js          -- schema, seeding logic (node:sqlite)
 lib/schedule.js     -- free-text -> structured day/time slot parser
